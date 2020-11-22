@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+import RPi.GPIO as GPIO
+import MFRC522
+import signal
+
+class RfidMFRC522:
+
+	#return UID in hexa string
+	def uidToString(self, uid):
+		hexa_str = ""
+		for i in uid:
+			hexa_str += format(i, '02X')
+		return hexa_str
+
+	#End the program
+	def end_read(signal, frame):
+		print ("Ctrl-C captured, ending read.")
+		GPIO.setwarnings(False)
+		GPIO.cleanup()
+
+	signal.signal(signal.SIGINT, end_read)
+
+	print ("Welcome!")
+	print ("Press Ctrl-C to stop")
+
+	#read the UID of the card detected
+	def read_uid(self):
+		
+		reader = MFRC522.MFRC522()
+
+		status = 2
+		while (status != 0):
+			reader = MFRC522.MFRC522()
+
+			#Scan for cards
+			(status, TagType) = reader.MFRC522_Request(reader.PICC_REQIDL)
+
+		#if a card is found
+		if status == reader.MI_OK:
+			
+			print ("Card detected")
+
+			#get uid
+			(status, uid) = reader.MFRC522_SelectTagSN()
+
+
+			#return uid
+			return ("Card read UID: %s" % self.uidToString(uid))
+
+		else:
+
+			print ("Not detected")
+		GPIO.cleanup()
+
+if __name__ == "__main__":
+	rf = RfidMFRC522()
+	uid = rf.read_uid()
+	print (uid)
